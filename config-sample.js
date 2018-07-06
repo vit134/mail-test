@@ -1,4 +1,4 @@
-module.export = {
+module.exports = {
 	hostname: "localhost",
 	port: "3081",
 	webPath: __dirname,
