@@ -1,13 +1,16 @@
-import { expect, assert } from 'chai';
+import { assert } from 'chai';
 import sequence from '../src/utils/sequence';
+import double from '../src/utils/double';
 
 const numbersArray = [1, 2, 3];
-const handler = () => 1;
+const expected = [2, 4, 6];
+
+const handler = double;
+
+const eventName = 'iteration';
+const thenable = sequence(numbersArray, handler);
 
 describe('Sequence', function() {
-	const eventName = 'iteration';
-	const thenable = sequence(numbersArray, handler);
-
 	describe('on', function() {
 		thenable.on(eventName, () => { });
 
@@ -23,21 +26,39 @@ describe('Sequence', function() {
 			thenable.listeners[eventName].forEach(element => {
 				assert.typeOf(element, 'function');	
 			});
+		});
+
+		it('should return coorect event type', function() {
+			thenable.on(eventName, function (event) {
+				assert.equal(eventName, event.type);
+			});
 			
+		});
+
+		it('should return coorect value', function () {
+			thenable.on(eventName, function (event, index, value) {
+				assert.equal(value, expected[index]);
+			});
 		});
 	});
 
-	describe('trigger', function () {
-		it('should execute handlers of event', function () {
-			let testValue;
-			let testHandler = function () {
-				testValue = 2;
-			};
+	describe('then', function () {
+		it('should return array', function () {
+			thenable.then(function (values) {
+				assert.isArray(values);
+			});
+		});
 
-			thenable.on('test', testHandler);
-			thenable.trigger('test', {});
+		it('should return correct values', function () {
+			thenable.then(function (values) {
+				assert.deepEqual(values,expected);
+			});
+		});
 
-			assert.equal(testValue, 2);
+		it('should return callCount', function () {
+			return thenable.then(function () {
+				assert.equal(handler.callCount, numbersArray.length);
+			});
 		});
 	});
 });

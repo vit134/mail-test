@@ -30,7 +30,6 @@ export default function sequence(iterable, handler) {
 		var listeners = MyPromise.listeners[event];
 
 		if (listeners !== undefined) {
-			//data.event = new Event(event);
 			data.event = {type: event};
 
 			for (var key in listeners) {

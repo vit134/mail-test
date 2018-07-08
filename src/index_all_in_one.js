@@ -2,52 +2,45 @@
 
 /**
  * Последовательно выполняет функцию handler для каждого элемента iterable.
- * @param {Array} iterable – массив исходных данных.
- * @param {Function} handler – возвращает обещание с вычисленным значением.
- * @returns {Thenable}
- * @resolves {Array}
- * @rejects {Error}
+ * @param { Array } iterable – массив исходных данных.
+ * @param { Function } handler – возвращает обещание с вычисленным значением.
+ * @returns { Thenable }
+ * @resolves { Array }
+ * @rejects { Error }
  */
 function sequence(iterable, handler) {
-	class MyPromise extends Promise {
-		constructor(resolve, reject) {
-			super(resolve, reject);
-			this.listeners = {};
-			return this;
-		}
-		trigger(name, params) {
-			let {index, value} = params;
-			let listeners = this.listeners[name];
+	var result = [];
+	var MyPromise = Promise.resolve();
 
-			if (listeners !== undefined) {
-				var event = new Event(name);
-				for (var key in listeners) {
-					listeners[key](event, index, value);
-				}
-			}
-
-			return this;
-		}
-		on(name, fn) {
-			(this.listeners[name] = this.listeners[name] || []).push(fn);
-			return this;
-		}
-	}
-
-	let chain = MyPromise.resolve();
-	let result = [];
-
-	iterable.forEach(function(item, index) {
-		chain = chain
+	iterable.forEach(function (item, index) {
+		MyPromise = MyPromise
 			.then(() => handler(item))
 			.then((value) => {
-				chain.trigger('iteration', {index, value});
+				MyPromise.trigger('iteration', { index, value });
 				result.push(value);
 				return result;
 			});
 	});
 
-	return chain;
+	MyPromise.listeners = {};
+
+	MyPromise.on = function (event, callback) {
+		(MyPromise.listeners[event] = MyPromise.listeners[event] || []).push(callback);
+	};
+
+	MyPromise.trigger = function (event, data) {
+		var listeners = MyPromise.listeners[event];
+
+		if (listeners !== undefined) {
+			data.event = { type: event };
+
+			for (var key in listeners) {
+				listeners[key](data.event, data.index, data.value);
+			}
+		}
+	};
+
+	return MyPromise;
 }
 
 /**
@@ -57,13 +50,13 @@ function sequence(iterable, handler) {
  * @resolves {number}
  * @rejects {Error}
  */
-function double(value) {
+export default function double(value) {
 	double.callCount++;
 
-	return new Promise(function(resolve) {
-		setTimeout(function() {
+	return new Promise(function (resolve) {
+		setTimeout(function () {
 			resolve(value * 2);
-		}, 100);
+		}, 500);
 	});
 }
 
@@ -73,9 +66,9 @@ function double(value) {
  */
 double.callCount = 0;
 
-var thenable = sequence([1,2,3], double);
+var thenable = sequence([1, 2, 3], double);
 
-thenable.on('iteration', function(event, index, value) {
+thenable.on('iteration', function (event, index, value) {
 	console.log(event.type === 'iteration', 'event.type === \'iteration\'');
 
 	switch (index) {
@@ -96,7 +89,7 @@ thenable.on('iteration', function(event, index, value) {
 	}
 });
 
-thenable.then(function(values) {
+thenable.then(function (values) {
 	console.log(values);
 	console.log(values[0] === 2, 'values[0] === 2');
 	console.log(values[1] === 4, 'values[1] === 4');
@@ -104,8 +97,8 @@ thenable.then(function(values) {
 	console.log(double.callCount === 3, 'double.callCount === 3');
 });
 
-sequence([1, 2, 3], function() {
+sequence([1, 2, 3], function () {
 	throw new Error('test');
-}).catch(function(reason) {
+}).catch(function (reason) {
 	console.error(reason instanceof Error, 'reason instanceof Error');
 });
