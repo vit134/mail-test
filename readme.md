@@ -1,5 +1,7 @@
 # Тестовое задание для mail.ru
 
+Ссылка на [GH Pages](https://vit134.github.io/mail-test/).
+
 ### Get started
 
 ```javascript
@@ -35,6 +37,10 @@ npm run server
 **PS**
 
 В файле src/index_all_in_one.js лиш дописана функция sequence из задания
+
+**PS2**
+
+Сбилженные файлы запушил в репозиторий нарочно, для того чтобы вы погли проверить выполнение на github pages
 
 
 
