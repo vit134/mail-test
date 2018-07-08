@@ -16,8 +16,10 @@
   "license": "ISC",
   "devDependencies": {
     "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-latest": "^6.24.1",
     "babel-preset-stage-3": "^6.24.1",
+    "chai": "^4.1.2",
     "eslint": "^5.0.1",
     "http-dev-server": "^0.2.3",
     "mocha": "^5.2.0",
@@ -26,6 +28,8 @@
     "webpack-cli": "^3.0.8"
   },
   "babel": {
-    "presets": ["env"]
+    "presets": [
+      "env"
+    ]
   }
 }

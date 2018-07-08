@@ -5,6 +5,8 @@ import double from './utils/double';
 
 var thenable = sequence([1,2,3], double);
 
+console.log(thenable.listeners);
+
 thenable.on('iteration', function(event, index, value) {
 	console.log(event.type === 'iteration', 'event.type === \'iteration\'');
 

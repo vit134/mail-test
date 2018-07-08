@@ -1,5 +1,3 @@
-import MyPromise from './MyPromise';
-
 /**
  * Последовательно выполняет функцию handler для каждого элемента iterable.
  * @param {Array} iterable – массив исходных данных.
@@ -8,19 +6,38 @@ import MyPromise from './MyPromise';
  * @resolves {Array}
  * @rejects {Error}
  */
-export default (iterable, handler) => {
-	let chain = MyPromise.resolve();
-	let result = [];
+export default function sequence(iterable, handler) {
+	var result = [];
+	var MyPromise = Promise.resolve();
 
-	iterable.forEach(function(item, index) {
-		chain = chain
+	iterable.forEach(function (item, index) {
+		MyPromise = MyPromise
 			.then(() => handler(item))
 			.then((value) => {
-				chain.trigger('iteration', {index, value});
+				MyPromise.trigger('iteration', { index, value });
 				result.push(value);
 				return result;
 			});
 	});
-	
-	return chain;
-};
+
+	MyPromise.listeners = {};
+
+	MyPromise.on = function (event, callback) {
+		(MyPromise.listeners[event] = MyPromise.listeners[event] || []).push(callback);
+	};
+
+	MyPromise.trigger = function (event, data) {
+		var listeners = MyPromise.listeners[event];
+
+		if (listeners !== undefined) {
+			//data.event = new Event(event);
+			data.event = {type: event};
+
+			for (var key in listeners) {
+				listeners[key](data.event, data.index, data.value);
+			}
+		}
+	};
+
+	return MyPromise;
+}

@@ -1,37 +1,21 @@
-export default class MyPromise extends Promise {
-	constructor(executor) {
-		super((resolve, reject) => {
-			return executor(resolve, reject);
-		});
+var MyPromise = Promise.resolve();
 
-		this._listeners = {};
-	}
+MyPromise.listeners = {};
 
-	then(onFulfilled, onRejected) {
-		const returnValue = super.then(onFulfilled, onRejected);
-		return returnValue;
-	}
-	
-	trigger(name, params) {
-		let {index, value} = params;
-		let _listeners = this._listeners[name];
+MyPromise.on = function (event, callback) {
+	(MyPromise.listeners[event] = MyPromise.listeners[event] || []).push(callback);
+};
 
-		if (_listeners !== undefined) {
-			var event = new Event(name);
-			for (var key in _listeners) {
-				_listeners[key](event, index, value);
-			}
+MyPromise.trigger = function (event, data) {
+	var listeners = MyPromise.listeners[event];
+
+	if (listeners !== undefined) {
+		data.event = new Event(event);
+
+		for (var key in listeners) {
+			listeners[key](data.event, data.index, data.value);
 		}
-
-		return this;
 	}
+};
 
-	on(name, fn) {
-		(this._listeners[name] = this._listeners[name] || []).push(fn);
-		return this;
-	}
-
-	get listeners() {
-		return this._listeners;
-	}
-}
+export default MyPromise;
